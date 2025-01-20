@@ -1,0 +1,23 @@
+{
+  "name": "vendorportal",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "netsuite-rest": "^1.1.0",
+    "nodemon": "^3.1.9",
+    "oauth-1.0a": "^2.2.6",
+    "pg": "^8.13.1"
+  }
+}
