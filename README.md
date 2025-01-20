@@ -21,7 +21,7 @@ npm install
 
 The following diagram illustrates the architecture of the integration system:
 
-![alt text](image.png)
+![alt text](https://github.com/chandanyadavsde/netsuitBI/blob/main/server/image.png)
 
 ## Environment Variables
 
