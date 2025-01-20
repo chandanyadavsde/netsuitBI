@@ -16,10 +16,10 @@ const fetchAndSaveSavedSearch4705 = async (req, res) => {
     try {
         // Generate headers
         const headers = createNetsuiteAuthHeaders(
-         consumer_key,consumer_secret_key,token_id,token_secret,netsuit_uri,realm
+            consumer_key, consumer_secret_key, token_id, token_secret, netsuit_uri, realm
         );
 
-        // Fetch data from Netsuite
+        // Fetch data from NetSuite
         const response = await axios.get(netsuit_uri, { headers });
         const results = response.data;
 
@@ -30,6 +30,31 @@ const fetchAndSaveSavedSearch4705 = async (req, res) => {
             // Clear the database table
             await client.query('DELETE FROM db4705');
             console.log('Cleared existing data from db4705');
+
+            // Helper function to parse date into 'YYYY-MM-DD HH:mm:ss' format
+            const parseDate = (dateString) => {
+                if (!dateString) return null;
+
+                // Handle dates with time and AM/PM
+                const dateTimeRegex = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{1,2}):(\d{2}) (am|pm)$/i;
+                const dateOnlyRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+
+                if (dateTimeRegex.test(dateString)) {
+                    const match = dateString.match(dateTimeRegex);
+                    let [_, day, month, year, hours, minutes, period] = match;
+                    hours = period.toLowerCase() === 'pm' && hours !== '12' ? parseInt(hours, 10) + 12 : hours;
+                    hours = period.toLowerCase() === 'am' && hours === '12' ? '00' : hours; // Handle 12 AM as 00 hours
+                    return `${year}-${month}-${day} ${hours}:${minutes}:00`;
+                }
+
+                if (dateOnlyRegex.test(dateString)) {
+                    const match = dateString.match(dateOnlyRegex);
+                    const [_, day, month, year] = match;
+                    return `${year}-${month}-${day} 00:00:00`;
+                }
+
+                return null; // Return null if the format is not recognized
+            };
 
             // Process data in batches
             for (let i = 0; i < results.length; i += BATCH_SIZE) {
@@ -52,18 +77,18 @@ const fetchAndSaveSavedSearch4705 = async (req, res) => {
                         `,
                         values: [
                             record.id,
-                            record.columns.find(c => c.name === 'trandate')?.value || null,
+                            parseDate(record.columns.find(c => c.name === 'trandate')?.value), // Parse posting_date
                             record.columns.find(c => c.name === 'type')?.value || null,
                             record.columns.find(c => c.name === 'subsidiarynohierarchy')?.value || null,
-                            record.columns.find(c => c.name === 'custbody_doc_date')?.value || null,
+                            parseDate(record.columns.find(c => c.name === 'custbody_doc_date')?.value), // Parse vendor_doc_date
                             record.columns.find(c => c.name === 'custbody_external_doc_no')?.value || null,
                             record.columns.find(c => c.name === 'transactionnumber')?.value || null,
+                            record.columns.find(c => c.name === 'tranid')?.value || null,
+                            parseDate(record.columns.find(c => c.name === 'datecreated')?.value), // Parse entry_date
                             record.columns.find(c => c.name === 'number')?.value || null,
-                            record.columns.find(c => c.name === 'datecreated')?.value || null,
                             record.columns.find(c => c.name === 'account')?.text || null,
-                            record.columns.find(c => c.name === 'memomain')?.text || null,
-                            record.columns.find(c => c.name === 'memo')?.text || null,
-                            record.columns.find(c => c.name === 'line.memo')?.text || null,
+                            record.columns.find(c => c.name === 'memomain')?.value || null,
+                            record.columns.find(c => c.name === 'memo')?.value || null,
                             record.columns.find(c => c.name === 'mainname')?.text || null,
                             record.columns.find(c => c.name === 'entity')?.text || null,
                             parseFloat(record.columns.find(c => c.name === 'formulacurrency')?.value) || 0,
@@ -111,5 +136,6 @@ const fetchAndSaveSavedSearch4705 = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch data' });
     }
 };
+
 
 module.exports = { fetchAndSaveSavedSearch4705 };

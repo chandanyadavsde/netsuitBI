@@ -39,9 +39,7 @@ const pool = new Pool({
     database: database,
     password:password,
     port: DB_PORT,
-    // ssl: {
-    //     rejectUnauthorized: false, // Allow self-signed certificates
-    //   },
+  ...(host !== 'localhost' ? { ssl: { rejectUnauthorized: false } } : {}),
 });
 pool.connect((err, client, release) => {
     if (err) {
