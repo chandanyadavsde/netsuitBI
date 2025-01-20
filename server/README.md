@@ -21,7 +21,7 @@ npm install
 
 The following diagram illustrates the architecture of the integration system:
 
-![System Architecture](image.png)
+![alt text](image.png)
 
 ## Environment Variables
 
