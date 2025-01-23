@@ -11,14 +11,8 @@ const savedsearch = require("./routes/savedSearchRoute");
 const { Pool } = require('pg');
 const cron = require("node-cron");
 const nodemailer = require('nodemailer'); // Import Nodemailer
+const {smtp_port,smtp_user,smtp_pass,smtp_from,smtp_to} = require("./config/smtp.js")
 
-// Netsuite environment variables
-const consumer_key = process.env.NETSUITE_CONSUMER_KEY;
-const consumer_secret_key = process.env.NETSUITE_CONSUMER_SECRET;
-const token_id = process.env.NETSUITE_TOKEN_ID;
-const token_secret = process.env.NETSUITE_TOKEN_SECRET;
-const realm = process.env.REALM;
-const netsuit_uri = process.env.NETSUIT_URI;
 
 // DB environment variables
 const port = process.env.SERVER_PORT || 3002; // You can change the port as needed
@@ -31,6 +25,7 @@ const DB_PORT = process.env.DB_PORT;
 const app = express();
 app.use(cors());
 app.use(express.json());
+console.log(smtp_pass)
 
 // Route to fetch all vendors
 app.use("/vendors", vendorRoutes);
@@ -48,12 +43,12 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-      user: "00chandan95@gmail.com",
-      pass: "byrj kkil yuwo gllo",
+      user: smtp_user,
+      pass: smtp_pass,
     },
   });
 // Schedule a Cron Job
-cron.schedule('*/2 * * * *', async () => {
+cron.schedule('*/1 * * * *', async () => {
     console.log('Server triggered: Automatically hitting APIs...');
 
     try {
@@ -66,8 +61,8 @@ cron.schedule('*/2 * * * *', async () => {
 
         // Send success email
         await transporter.sendMail({
-            from: "00chandan95@gmail.com",
-            to: 'harsh.sahu@sorigin.co',
+            from: smtp_from,
+            to: smtp_to,
             subject: 'Database update result: Success',
             html: `
                 <p>Dear Team,</p>
@@ -88,8 +83,8 @@ cron.schedule('*/2 * * * *', async () => {
 
         // Send failure email
         await transporter.sendMail({
-            from: "00chandan95@gmail.com",
-            to: 'harsh.sahu@sorigin.co',
+            from: smtp_from,
+            to: smtp_to,
             subject: 'Database Update Result: Failure',
             html: `
                 <p>Dear Team,</p>
@@ -100,8 +95,8 @@ cron.schedule('*/2 * * * *', async () => {
             `
         });
          await transporter.sendMail({
-            from: "00chandan95@gmail.com", // Sender address
-            to: 'harsh.sahu@sorigin.co', // Recipient email
+            from: smtp_from, // Sender address
+            to: smtp_to, // Recipient email
             subject: 'Database Update Failure Notification',
             text: `Database update job failed at ${new Date().toLocaleString()}.\n\nError: ${err.message}`
         });
