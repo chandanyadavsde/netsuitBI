@@ -8,6 +8,7 @@ const token_id= process.env.NETSUITE_TOKEN_ID
 const token_secret= process.env.NETSUITE_TOKEN_SECRET
 const realm= process.env.REALM
 const netsuit_uri=process.env.NETSUIT_URI
+const uri4705=process.env.URI_4705
 // Constants
 const BATCH_SIZE = 999;
 
@@ -16,11 +17,11 @@ const fetchAndSaveSavedSearch4705 = async (req, res) => {
     try {
         // Generate headers
         const headers = createNetsuiteAuthHeaders(
-            consumer_key, consumer_secret_key, token_id, token_secret, netsuit_uri, realm
+            consumer_key, consumer_secret_key, token_id, token_secret, uri4705, realm
         );
 
         // Fetch data from NetSuite
-        const response = await axios.get(netsuit_uri, { headers });
+        const response = await axios.get(uri4705, { headers });
         const results = response.data;
 
         const client = await pool.connect();
